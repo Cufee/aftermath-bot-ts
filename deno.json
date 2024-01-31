@@ -1,0 +1,17 @@
+{
+  "tasks": {
+    "dev": "deno run -A --unstable --watch main.ts"
+  },
+  "imports": {
+    "$core/": "./src/core/",
+    "$logic/": "./src/logic/",
+    "$discord/": "./src/logic/discord/",
+    "discord": "npm:discord.js",
+    "dotenv": "https://deno.land/std@0.212.0/dotenv/load.ts"
+  },
+  "allowEmptyValues": true,
+  "lock": false,
+  "unstable": [
+    "kv"
+  ]
+}

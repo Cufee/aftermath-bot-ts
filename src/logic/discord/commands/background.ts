@@ -1,6 +1,7 @@
 import CommandBuilder from "$discord/command.ts";
 
 import { CommandContext } from "$logic/discord/context.ts";
+import { Handler } from "$logic/discord/load.ts";
 
 export const command = new CommandBuilder();
 command.setName("background");
@@ -11,6 +12,6 @@ command.addStringOption((option) =>
     .setRequired(true)
 );
 
-export const handler = async (ctx: CommandContext) => {
-  ctx.reply("Not implemented");
+export const handler: Handler<CommandContext> = (ctx: CommandContext) => {
+  return ctx.reply("Not implemented");
 };

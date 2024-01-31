@@ -2,9 +2,13 @@ import CommandBuilder from "./command.ts";
 import { CommandContext, EventContext } from "./context.ts";
 import { Result } from "$core/Result.d.ts";
 
+export type Handler<T = CommandContext | EventContext> = (
+  ctx: T,
+) => Promise<Result<unknown>>;
+
 interface Command {
   command: CommandBuilder;
-  handler: (ctx: CommandContext) => Promise<Result<unknown>>;
+  handler: Handler<CommandContext>;
 }
 
 export const loadCommands = async () => {
@@ -24,7 +28,7 @@ export const loadCommands = async () => {
 
 interface Event {
   match: (id: string) => boolean;
-  handler: (ctx: EventContext) => Promise<Result<unknown>>;
+  handler: Handler<EventContext>;
 }
 
 export const loadEvents = async () => {

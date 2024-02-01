@@ -23,5 +23,7 @@ COPY --from=bin /deno /bin/deno
 WORKDIR /deno-dir
 COPY . .
 
+RUN deno cache main.ts
+
 ENTRYPOINT ["/bin/deno"]
 CMD ["run", "--allow-read", "--allow-env", "--allow-net", "main.ts"]

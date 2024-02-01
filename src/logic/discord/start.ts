@@ -13,9 +13,9 @@ const commands = await loadCommands();
 const promoText = [
   "amth.one/join - Join Aftermath Official",
   "amth.one/invite - Add Aftermath to your server",
-  ...Object.values(commands).map((c) =>
-    `/${c.command.name} - ${c.command.description}`
-  ),
+  ...Object.values(commands)
+    .filter((c) => c.command.advertise)
+    .map((c) => `/${c.command.name} - ${c.command.description}`),
 ];
 
 const client = new Client({
@@ -87,6 +87,33 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     switch (true) {
       case (!!isCommand): {
+        const cmd = commands[interaction.commandName].command;
+        if (
+          cmd.exclusive &&
+          interaction.guildId !== Deno.env.get("PRIMARY_GUILD_ID")
+        ) {
+          await ctx.reply({
+            content:
+              "This command can only be used on the Aftermath Official server\nhttps://amth.one/join",
+            ephemeral: true,
+          });
+          return;
+        }
+        if (cmd.guildOnly && !interaction.guildId) {
+          await ctx.reply({
+            content: "This command can only be used in a server.",
+            ephemeral: true,
+          });
+          return;
+        }
+        if (cmd.dmOnly && interaction.guildId) {
+          await ctx.reply({
+            content: "This command can only be used in a Direct Messages.",
+            ephemeral: true,
+          });
+          return;
+        }
+
         const r = await commands[interaction.commandName].handler(ctx);
         if (!r.ok) ctx.error(r.error);
         break;

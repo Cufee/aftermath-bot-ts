@@ -1,0 +1,8 @@
+.vscode
+task
+tmp
+
+.env.example
+.env
+
+fly.toml

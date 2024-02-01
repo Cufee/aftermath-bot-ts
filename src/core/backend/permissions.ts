@@ -6,6 +6,10 @@ let permissionsCache = new Map<string, bigint>();
 let lastCacheUpdate = 0;
 
 await getPermissions();
+Deno.cron("update permissions", "0 * * * *", () => {
+  console.debug("Updating permissions cache");
+  getPermissions();
+});
 
 export function getPermissions() {
   return tryCatch<Map<string, bigint>>(async () => {

@@ -1,13 +1,14 @@
 {
   "tasks": {
-    "dev": "deno run -A --unstable --watch main.ts"
+    "dev": "deno run -A --watch main.ts"
   },
   "imports": {
+    "std/": "https://deno.land/std@0.213.0/",
     "$core/": "./src/core/",
     "$logic/": "./src/logic/",
     "$discord/": "./src/logic/discord/",
-    "discord": "npm:discord.js",
-    "dotenv": "https://deno.land/std@0.212.0/dotenv/load.ts"
+    "discord": "npm:discord.js@14.14.1",
+    "buffer": "npm:buffer@6.0.3"
   },
   "allowEmptyValues": true,
   "lock": false,

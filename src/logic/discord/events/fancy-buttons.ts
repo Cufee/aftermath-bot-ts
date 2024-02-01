@@ -1,9 +1,10 @@
 import { EventContext } from "$logic/discord/context.ts";
+import { Handler } from "$logic/discord/load.ts";
 
 export function match(id: string): boolean {
-  return !!id && id.startsWith("fancy_background_select_");
+  return id.startsWith("fancy_background_select_");
 }
 
-export const handler = async (ctx: EventContext) => {
-  await ctx.reply("Not implemented");
+export const handler: Handler<EventContext> = (ctx: EventContext) => {
+  return ctx.reply("Not implemented");
 };

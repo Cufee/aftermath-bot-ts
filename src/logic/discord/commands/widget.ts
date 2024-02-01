@@ -1,6 +1,6 @@
 import CommandBuilder from "$discord/command.ts";
 
-import { CommandContext } from "$logic/discord/context.ts";
+import { Context } from "$logic/discord/context.ts";
 import { Handler } from "$logic/discord/load.ts";
 
 export const command = new CommandBuilder();
@@ -15,6 +15,6 @@ command.addStringOption((option) =>
     )
     .setRequired(false)
 );
-export const handler: Handler<CommandContext> = (ctx: CommandContext) => {
+export const handler: Handler<Context> = (ctx: Context) => {
   return ctx.reply("Not implemented");
 };

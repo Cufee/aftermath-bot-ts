@@ -1,21 +1,15 @@
 import { Client, Events, GatewayIntentBits, REST, Routes } from "discord";
-import { Result } from "$core/Result.d.ts";
+import { User } from "$core/backend/user.ts";
 
 import { loadCommands, loadEvents } from "$discord/load.ts";
-import { CommandContext, EventContext } from "$discord/context.ts";
+import { Context } from "$discord/context.ts";
 import { mustGetEnv } from "$core/env.ts";
+import { reportError } from "$logic/report/webhook.ts";
 
 const token = mustGetEnv("DISCORD_TOKEN");
-const guildId = mustGetEnv("DISCORD_GUILD_ID");
-const clientId = mustGetEnv("DISCORD_CLIENT_ID");
 
 const events = await loadEvents();
 const commands = await loadCommands();
-const rest = new REST().setToken(token);
-rest.put(
-  Routes.applicationGuildCommands(clientId, guildId),
-  { body: Object.values(commands).map((c) => c.command) },
-);
 
 const client = new Client({
   intents: [
@@ -25,40 +19,95 @@ const client = new Client({
   ],
 });
 
-client.once(Events.ClientReady, (readyClient) => {
+client.once(Events.ClientReady, async (readyClient) => {
+  if (Deno.env.get("DEV_MODE") !== "true") {
+    const rest = new REST().setToken(token);
+    console.info("Started refreshing application (/) commands.");
+    await rest.put(
+      // Register all commands globally to advertise their existence and then limit access through a middleware
+      Routes.applicationCommands(readyClient.application.id),
+      { body: Object.values(commands).map((c) => c.command) },
+    );
+    console.info("Successfully reloaded application (/) commands.");
+  }
+
   console.info(`Ready! Logged in as ${readyClient.user.tag}`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    let result: Result<unknown> = { ok: false, error: "unknown interaction" };
+    // This is here for TS to see that .reply exists and to create Context
+    const isCommand = interaction.isCommand() &&
+      commands[interaction.commandName];
+    const isEvent = "customId" in interaction;
 
-    // Get user here
-    const user = { id: interaction.user.id };
+    if (!isCommand && !isEvent) {
+      console.error("Unknown interaction type:", interaction);
+      return;
+    }
 
-    // Command
-    if (interaction.isCommand() && commands[interaction.commandName]) {
-      result = await commands[interaction.commandName].handler(
-        new CommandContext(interaction, user),
+    // Get user
+    const userResponse = await User.find(interaction.user.id);
+    if (!userResponse.ok) {
+      console.error("Failed to fetch user:", userResponse.error);
+      const reported = await reportError(
+        `### Error while fetching user for interaction\n**Guild**: ${interaction.guildId}\n**User**: ${interaction.user.id}\n\`\`\`failed to fetch user: ${userResponse.error}\n${Error().stack}\`\`\``,
       );
+      await interaction.reply({
+        content: reported
+          ? "Something went wrong. Please try again later.\n*This error has been reported automatically.*"
+          : "Something went wrong. Please try again later.\n*Feel free to report this error at `amth.one/join`.*",
+        ephemeral: true,
+      });
+      return;
+    }
+    const ctx = new Context(interaction, userResponse.data);
+    if (ctx.user.banned) {
+      await ctx.reply({
+        content: "You have been banned from using Aftermath.",
+        ephemeral: true,
+      });
+      return;
     }
 
-    // Interaction Event
-    if ("customId" in interaction) {
-      const { handler } = events.find((event) =>
-        event.match(interaction.customId)
-      ) ?? {};
-      if (handler) {
-        result = await handler(new EventContext(interaction, user));
+    switch (true) {
+      case (!!isCommand): {
+        const r = await commands[interaction.commandName].handler(ctx);
+        if (!r.ok) ctx.error(r.error);
+        break;
       }
-    }
-
-    // Check for errors
-    if (!result.ok) {
-      console.error("interaction handler failed:", result.error);
+      case (!!isEvent): {
+        // Interaction Event
+        const { handler } = events.find((event) =>
+          event.match(interaction.customId)
+        ) ?? {};
+        if (handler) {
+          const r = await handler(ctx);
+          if (!r.ok) ctx.error(r.error);
+        }
+        break;
+      }
+      default: {
+        console.error(
+          "unknown interaction: ",
+          "customId" in interaction
+            ? interaction.customId
+            : interaction.commandName,
+        );
+        break;
+      }
     }
   } catch (error) {
     console.error("interaction handler threw:", error);
+    try {
+      await reportError(
+        `### Error while fetching user for interaction\n**Guild**: ${interaction.guildId}\n**User**: ${interaction.user.id}\n\`\`\`interaction handler threw: ${
+          error.message || JSON.stringify(error)
+        }\n${Error().stack}\`\`\``,
+      );
+    } catch (e) {
+      console.error("Failed to report error:", e);
+    }
   }
 });
 

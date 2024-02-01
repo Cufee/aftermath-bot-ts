@@ -1,14 +1,14 @@
 import CommandBuilder from "./command.ts";
-import { CommandContext, EventContext } from "./context.ts";
+import { Context } from "./context.ts";
 import { Result } from "$core/Result.d.ts";
 
-export type Handler<T = CommandContext | EventContext> = (
+export type Handler<T = Context | Context> = (
   ctx: T,
 ) => Promise<Result<unknown>>;
 
 interface Command {
   command: CommandBuilder;
-  handler: Handler<CommandContext>;
+  handler: Handler<Context>;
 }
 
 export const loadCommands = async () => {
@@ -20,6 +20,10 @@ export const loadCommands = async () => {
     const { command, handler } = await import(
       `./commands/${f.name}`
     ) as Command;
+    if (!command || !handler) {
+      console.error(`Skipping command ${f.name}`);
+      continue;
+    }
 
     commands[command.name] = { command, handler };
   }
@@ -28,7 +32,7 @@ export const loadCommands = async () => {
 
 interface Event {
   match: (id: string) => boolean;
-  handler: Handler<EventContext>;
+  handler: Handler<Context>;
 }
 
 export const loadEvents = async () => {
@@ -36,7 +40,14 @@ export const loadEvents = async () => {
 
   for (const f of Deno.readDirSync("src/logic/discord/events")) {
     if (!f.isFile) continue;
-    events.push(await import(`./events/${f.name}`) as Event);
+
+    const { match, handler } = await import(`./events/${f.name}`) as Event;
+    if (!match || !handler) {
+      console.error(`Skipping event ${f.name}`);
+      continue;
+    }
+
+    events.push({ match, handler });
   }
   return events;
 };

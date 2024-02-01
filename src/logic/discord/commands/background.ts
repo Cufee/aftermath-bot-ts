@@ -2,6 +2,7 @@ import CommandBuilder from "$discord/command.ts";
 
 import { Context } from "$logic/discord/context.ts";
 import { Handler } from "$logic/discord/load.ts";
+import { uploadCustomUserBackground } from "$core/backend/users.ts";
 
 export const command = new CommandBuilder();
 command.setName("background");
@@ -13,6 +14,45 @@ command.addStringOption((option) =>
 );
 command.setAdvertise(false);
 
-export const handler: Handler<Context> = (ctx: Context) => {
-  return ctx.reply("Not implemented");
+export const handler: Handler<Context> = async (ctx: Context) => {
+  if (!ctx.user.hasPermission("actions/uploadPersonalBackground")) {
+    return ctx.reply({
+      content:
+        "This feature of Aftermath is only available for users with an active subscription.\nYou can subscribe at https://amth.one/join or pick a background using `/fancy` instead.",
+      ephemeral: true,
+    });
+  }
+
+  const { connection, exists } = ctx.user.wargaming;
+  if (!exists || !connection.verified) {
+    return ctx.reply({
+      content:
+        "You need to verify your Wargaming account to use this feature. Use `/verify` to get started!",
+      ephemeral: true,
+    });
+  }
+
+  const link = ctx.options<string>("url");
+  if (!link) {
+    return ctx.reply({
+      content: "You need to provide a link to a PNG or JPEG image.",
+      ephemeral: true,
+    });
+  }
+
+  await ctx.ack();
+  const res = await uploadCustomUserBackground(ctx.user.id, link);
+  if (!res.ok) {
+    if (res.error === "invalid image format") {
+      return ctx.reply({
+        content: "The link you provided doesn't point to a PNG or JPEG image.",
+        ephemeral: true,
+      });
+    }
+    return ctx.error(res.error);
+  }
+
+  return ctx.reply(
+    "## :tada: Your custom background image was updated\nTry checking your session again!",
+  );
 };

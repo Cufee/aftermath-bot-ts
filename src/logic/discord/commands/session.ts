@@ -1,5 +1,7 @@
 import CommandBuilder from "$discord/command.ts";
 import { AttachmentBuilder } from "discord";
+import { playerNameValid } from "$logic/utils.ts";
+import { User } from "$core/backend/user.ts";
 
 import { Context } from "$logic/discord/context.ts";
 import { Handler } from "$logic/discord/load.ts";
@@ -24,14 +26,45 @@ command.addStringOption((option) =>
     )
     .setRequired(false)
 );
+command.addUserOption((option) =>
+  option.setName("user")
+    .setDescription("Mention User")
+    .setRequired(false)
+);
 
 export const handler: Handler<Context> = async (ctx: Context) => {
-  let accountId: number;
+  const mentionedUser = ctx.options<string>("user");
   const server = ctx.options<string>("server");
   const nickname = ctx.options<string>("nickname");
+  if (nickname && !playerNameValid(nickname)) {
+    return ctx.reply({
+      content:
+        "The nickname you provided is invalid. It should contain only letters, numbers, or underscores.",
+      ephemeral: true,
+    });
+  }
+
+  let accountId: number;
   const { connection, exists } = ctx.user.wargaming;
 
   switch (true) {
+    case (!!mentionedUser): {
+      // Use default account of another user
+      const res = await User.find(mentionedUser);
+      if (!res.ok) {
+        return ctx.error(res.error);
+      }
+      const { connection, exists } = res.data.wargaming;
+      if (!exists) {
+        return ctx.reply({
+          content:
+            "The user you mentioned doesn't have a Wargaming account linked.",
+          ephemeral: true,
+        });
+      }
+      accountId = connection.accountId;
+      break;
+    }
     case (exists && !nickname): {
       // Use default account
       accountId = connection.accountId;
@@ -65,7 +98,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
 
   const result = await renderAccountStatsImage(accountId);
   if (!result.ok) {
-    return ctx.reply(result.error);
+    return ctx.error(result.error);
   }
 
   const file = new AttachmentBuilder(result.data, {

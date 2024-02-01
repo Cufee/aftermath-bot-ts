@@ -3,6 +3,8 @@ import CommandBuilder from "$discord/command.ts";
 import { Context } from "$logic/discord/context.ts";
 import { Handler } from "$logic/discord/load.ts";
 import { searchAccounts } from "$core/backend/accounts.ts";
+import { playerNameValid } from "$logic/utils.ts";
+import { updateUserWargamingConnection } from "$core/backend/users.ts";
 
 export const command = new CommandBuilder();
 command.setName("link");
@@ -24,42 +26,55 @@ command.addStringOption((option) =>
 );
 
 export const handler: Handler<Context> = async (ctx: Context) => {
-  let accountId: number;
+  if (!ctx.user.hasPermission("actions/createPersonalConnection")) {
+    return ctx.reply({
+      content: "You don't have permission to use this command.",
+      ephemeral: true,
+    });
+  }
+
   const server = ctx.options<string>("server");
   const nickname = ctx.options<string>("nickname");
-  const { connection, exists } = ctx.user.wargaming;
+  if (nickname && !playerNameValid(nickname)) {
+    return ctx.reply({
+      content:
+        "The nickname you provided is invalid. It should contain only letters, numbers, or underscores.",
+      ephemeral: true,
+    });
+  }
 
-  switch (true) {
-    case (exists && !nickname): {
-      // Use default account
-      accountId = connection.accountId;
-      break;
-    }
-    case (!!nickname && !!server): {
-      // Find account
-      const account = await searchAccounts(nickname, server);
-      if (!account.ok) {
-        if (account.error === "no results found") {
-          return ctx.reply({
-            content:
-              `Couldn't find a player named **${nickname}** on **${server}**. Was the name spelled correctly?`,
-            ephemeral: true,
-          });
-        }
-        return ctx.error(account.error);
-      }
-      accountId = account.data.account_id;
-      break;
-    }
-    default: {
+  if (!nickname || !server) {
+    return ctx.reply({
+      content:
+        "I need both the name and server to find your account. You can also use `/link` to setup a default account.",
+      ephemeral: true,
+    });
+  }
+
+  await ctx.ack();
+
+  // Find account
+  const account = await searchAccounts(nickname, server);
+  if (!account.ok) {
+    if (account.error === "no results found") {
       return ctx.reply({
         content:
-          "I need both the name and server to find your account. You can also use `/link` to setup a default account.",
+          `Couldn't find a player named **${nickname}** on **${server}**. Was the name spelled correctly?`,
         ephemeral: true,
       });
     }
+    return ctx.error(account.error);
   }
-  await ctx.ack();
 
-  return ctx.reply("Not implemented");
+  const res = await updateUserWargamingConnection(
+    ctx.user.id,
+    account.data.account_id,
+  );
+  if (!res.ok) {
+    return ctx.error(res.error);
+  }
+
+  return ctx.reply(
+    `## :link: Your account has been linked!\nAftermath will now default to **${account.data.nickname}** on **${server.toUpperCase()}** when checking stats.\nYou can also verify your account with \`/verify\``,
+  );
 };

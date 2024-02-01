@@ -47,3 +47,26 @@ export function renderUserStatsImage(
     return { ok: true, data: file };
   });
 }
+
+export function getAvailableBackgroundPresets(userId: string) {
+  return tryCatch<{ image: Buffer; options: string[] }>(async () => {
+    const res = await fetch(`${backendUrl}/users/${userId}/content/select`);
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: `Failed to get current background selection preview: ${await res
+          .text()}`,
+      };
+    }
+
+    const data = await res.json() as Response<
+      { image: string; options: string[] }
+    >;
+    if (!data.success) {
+      return { ok: false, error: data.error.message || "Unknown error" };
+    }
+
+    const file = Buffer.from(decodeBase64(data.data.image));
+    return { ok: true, data: { image: file, options: data.data.options } };
+  });
+}

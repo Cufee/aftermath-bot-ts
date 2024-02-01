@@ -21,10 +21,19 @@
 //     )
 //     .setRequired(false)
 // );
+
 // export const handler: Handler<Context> = async (ctx: Context) => {
-// let accountId: number;
 // const server = ctx.options<string>("server");
 // const nickname = ctx.options<string>("nickname");
+// if (nickname && !playerNameValid(nickname)) {
+//   return ctx.reply({
+//     content:
+//       "The nickname you provided is invalid. It should contain only letters, numbers, or underscores.",
+//     ephemeral: true,
+//   });
+// }
+
+// let accountId: number;
 // const { connection, exists } = ctx.user.wargaming;
 
 // switch (true) {

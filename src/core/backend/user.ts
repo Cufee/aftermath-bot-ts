@@ -1,6 +1,7 @@
 import { Result } from "$core/Result.d.ts";
 import { getUserById } from "$core/backend/users.ts";
 import { realmFromPlayerId } from "$core/backend/utils.ts";
+import { getPermission } from "$core/backend/permissions.ts";
 
 export class User {
   private _data: UserData;
@@ -35,8 +36,9 @@ export class User {
     }
     return perms;
   }
-  hasPermissions(value: bigint) {
-    return (this.permissions & value) === value;
+  hasPermission(name: string) {
+    const perms = getPermission(name);
+    return (this.permissions & perms) === perms;
   }
 
   hasFeatureFlag(value: string) {

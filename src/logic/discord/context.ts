@@ -12,6 +12,7 @@ import {
   ModalSubmitInteraction,
 } from "discord";
 import { reportError } from "$logic/report/webhook.ts";
+import { managerToFetchingStrategyOptions } from "discord";
 
 type replyOptions = string | MessagePayload | InteractionReplyOptions;
 type Interaction =
@@ -22,13 +23,18 @@ type Interaction =
 
 interface ContextState {
   acked: boolean;
+  ackedEphemeral: boolean;
   interactionReply: InteractionResponse<boolean> | null;
 }
 
 export class Context {
   readonly user: User;
   private i: Interaction;
-  private state: ContextState = { acked: false, interactionReply: null };
+  private state: ContextState = {
+    acked: false,
+    interactionReply: null,
+    ackedEphemeral: false,
+  };
 
   constructor(i: Interaction, user: User) {
     this.user = user;
@@ -41,6 +47,7 @@ export class Context {
     }
     try {
       this.state.interactionReply = await this.i.deferReply({ ephemeral });
+      this.state.ackedEphemeral = ephemeral;
       this.state.acked = true;
       return { ok: true, data: null };
     } catch (error) {
@@ -59,6 +66,10 @@ export class Context {
       }
 
       this.state.interactionReply = await this.i.reply(options);
+      this.state.ackedEphemeral =
+        typeof options === "object" && "ephemeral" in options
+          ? !!options.ephemeral
+          : false;
       this.state.acked = true;
       return { ok: true, data: null };
     } catch (error) {
@@ -89,7 +100,8 @@ export class Context {
   async error(message: string): Promise<Result<null>> {
     try {
       const reported = await reportError(
-        `### Error while handling interaction\n**Guild**: ${this.i.guildId}\n**User**: ${this.user.id}\n\`\`\`${message}\n${Error().stack}\`\`\``,
+        `### Error while handling interaction\n**Guild**: ${this.i.guildId}\n**User**: ${this.user.id}\n\`\`\`${message}\n${Error().stack}`
+          .slice(0, 1997) + "```",
       );
       if (!reported) {
         console.error("Failed to report error:", message);
@@ -100,6 +112,10 @@ export class Context {
           : "Something went wrong. Please try again later.\n*Feel free to report this error at `amth.one/join`.*",
         ephemeral: true,
       });
+      if (!this.state.ackedEphemeral) {
+        setTimeout(() => this.deleteReply(), 10000);
+      }
+
       return { ok: true, data: null };
     } catch (error) {
       console.error("Failed to handle error:", error);
@@ -109,7 +125,7 @@ export class Context {
 
   options<T>(key: string): T | null {
     if ("options" in this.i) {
-      return (this.i.options.get(key) as T) ?? null;
+      return (this.i.options.get(key)?.value as T) ?? null;
     }
     return null;
   }

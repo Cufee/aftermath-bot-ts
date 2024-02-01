@@ -18,7 +18,7 @@ command.addStringOption((option) =>
 );
 
 export const handler: Handler<Context> = (ctx: Context) => {
-  const flavor = ctx.options<string>("flavor");
+  const flavor = ctx.optionValue<string>("flavor");
 
   const { connection, exists } = ctx.user.wargaming;
   if (!exists) {

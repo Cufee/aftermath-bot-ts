@@ -6,6 +6,7 @@ import {
   ButtonInteraction,
   CacheType,
   CommandInteraction as CommandInteractionType,
+  CommandInteractionOption,
   InteractionReplyOptions,
   InteractionResponse,
   InteractionType,
@@ -131,10 +132,18 @@ export class Context {
     }
   }
 
-  options<T>(key: string): T | null {
+  options(key: string): CommandInteractionOption<CacheType> | null {
     if ("options" in this.i) {
-      return (this.i.options.get(key)?.value as T) ?? null;
+      return this.i.options.get(key);
     }
     return null;
+  }
+
+  optionValue<T>(key: string): T | null {
+    const option = this.options(key);
+    if (!option) {
+      return null;
+    }
+    return option.value as T;
   }
 }

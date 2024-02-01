@@ -33,8 +33,8 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     });
   }
 
-  const server = ctx.options<string>("server");
-  const nickname = ctx.options<string>("nickname");
+  const server = ctx.optionValue<string>("server");
+  const nickname = ctx.optionValue<string>("nickname");
   if (nickname && !playerNameValid(nickname)) {
     return ctx.reply({
       content:

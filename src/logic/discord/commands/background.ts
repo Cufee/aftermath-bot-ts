@@ -10,7 +10,12 @@ command.setDescription("Upload a custom background image for your stats!");
 command.addStringOption((option) =>
   option.setName("url")
     .setDescription("Link to a PNG or JPEG image")
-    .setRequired(true)
+    .setRequired(false)
+);
+command.addAttachmentOption((option) =>
+  option.setName("file")
+    .setDescription("PNG or JPEG image")
+    .setRequired(false)
 );
 command.setAdvertise(false);
 
@@ -32,16 +37,17 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     });
   }
 
-  const link = ctx.options<string>("url");
-  if (!link) {
+  const link = ctx.optionValue<string>("url");
+  const file = ctx.options("file")?.attachment?.url || null;
+  if (!link && !file) {
     return ctx.reply({
-      content: "You need to provide a link to a PNG or JPEG image.",
+      content: "You need to provide a valid link or attach an image.",
       ephemeral: true,
     });
   }
 
   await ctx.ack();
-  const res = await uploadCustomUserBackground(ctx.user.id, link);
+  const res = await uploadCustomUserBackground(ctx.user.id, (link || file)!);
   if (!res.ok) {
     if (res.error === "invalid image format") {
       return ctx.reply({

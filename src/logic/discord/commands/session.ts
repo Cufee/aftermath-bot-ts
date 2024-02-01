@@ -33,9 +33,9 @@ command.addUserOption((option) =>
 );
 
 export const handler: Handler<Context> = async (ctx: Context) => {
-  const mentionedUser = ctx.options<string>("user");
-  const server = ctx.options<string>("server");
-  const nickname = ctx.options<string>("nickname");
+  const mentionedUser = ctx.optionValue<string>("user");
+  const server = ctx.optionValue<string>("server");
+  const nickname = ctx.optionValue<string>("nickname");
   if (nickname && !playerNameValid(nickname)) {
     return ctx.reply({
       content:

@@ -23,7 +23,7 @@ command.addStringOption((option) =>
 
 export const handler: Handler<Context> = async (ctx: Context) => {
   const { connection } = ctx.user.wargaming;
-  const server = ctx.options<string>("server") || connection?.realm || null;
+  const server = ctx.optionValue<string>("server") || connection?.realm || null;
   if (!server) {
     return ctx.reply({
       content: "Please select a server to verify your account.",

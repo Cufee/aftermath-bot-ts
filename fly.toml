@@ -6,17 +6,14 @@
 app = 'aftermath-bot'
 primary_region = 'lhr'
 
-[build]
-
 [env]
 CORE_SERVICE_URL = 'http://aftermath-core.internal:9090/v1'
 PRIMARY_GUILD_ID = '1195871408392257668'
 FRONTEND_URL = 'https://amth.one'
+DEV_MODE = 'false'
 LOG_LEVEL = 'info'
 PORT = '9090'
 
-[processes]
-app = 'run --allow-net --allow-env --allow-read ./main.ts'
 
 [[vm]]
 cpu_kind = 'shared'

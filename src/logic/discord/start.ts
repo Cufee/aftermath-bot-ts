@@ -10,6 +10,13 @@ const token = mustGetEnv("DISCORD_TOKEN");
 
 const events = await loadEvents();
 const commands = await loadCommands();
+const promoText = [
+  "amth.one/join - Join Aftermath Official",
+  "amth.one/invite - Add Aftermath to your server",
+  ...Object.values(commands).map((c) =>
+    `/${c.command.name} - ${c.command.description}`
+  ),
+];
 
 const client = new Client({
   intents: [
@@ -30,6 +37,14 @@ client.once(Events.ClientReady, async (readyClient) => {
     );
     console.info("Successfully reloaded application (/) commands.");
   }
+
+  let lastPromoIndex = 1;
+  readyClient.user.setActivity({ name: promoText[0] });
+
+  Deno.cron("update bot status", "*/5 * * * *", () => {
+    readyClient.user.setActivity({ name: promoText[lastPromoIndex] });
+    lastPromoIndex = (lastPromoIndex + 1) % promoText.length;
+  });
 
   console.info(`Ready! Logged in as ${readyClient.user.tag}`);
 });

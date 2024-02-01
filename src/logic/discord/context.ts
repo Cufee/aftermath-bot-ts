@@ -8,11 +8,11 @@ import {
   CommandInteraction as CommandInteractionType,
   InteractionReplyOptions,
   InteractionResponse,
+  InteractionType,
   MessagePayload,
   ModalSubmitInteraction,
 } from "discord";
 import { reportError } from "$logic/report/webhook.ts";
-import { managerToFetchingStrategyOptions } from "discord";
 
 type replyOptions = string | MessagePayload | InteractionReplyOptions;
 type Interaction =
@@ -28,7 +28,13 @@ interface ContextState {
 }
 
 export class Context {
+  readonly type:
+    | InteractionType.ApplicationCommand
+    | InteractionType.MessageComponent
+    | InteractionType.ModalSubmit;
+  readonly customId: string;
   readonly user: User;
+
   private i: Interaction;
   private state: ContextState = {
     acked: false,
@@ -37,6 +43,8 @@ export class Context {
   };
 
   constructor(i: Interaction, user: User) {
+    this.customId = "customId" in i ? i.customId : "";
+    this.type = i.type;
     this.user = user;
     this.i = i;
   }

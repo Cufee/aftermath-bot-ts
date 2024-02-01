@@ -8,7 +8,8 @@
     "$logic/": "./src/logic/",
     "$discord/": "./src/logic/discord/",
     "discord": "npm:discord.js@14.14.1",
-    "buffer": "npm:buffer@6.0.3"
+    "buffer": "npm:buffer@6.0.3",
+    "cron": "npm:cron-schedule@4.0.0"
   },
   "allowEmptyValues": true,
   "lock": false,

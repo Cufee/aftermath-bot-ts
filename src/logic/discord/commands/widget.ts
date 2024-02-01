@@ -3,7 +3,6 @@ import CommandBuilder from "$discord/command.ts";
 import { Context } from "$logic/discord/context.ts";
 import { Handler } from "$logic/discord/load.ts";
 import { frontendUrl } from "$core/backend/constants.ts";
-import { Options } from "discord";
 
 export const command = new CommandBuilder();
 command.setName("widget");
@@ -37,7 +36,9 @@ export const handler: Handler<Context> = (ctx: Context) => {
   const link =
     `${frontendUrl}/widget/${connection.accountId}/standalone?${params.toString()}`;
 
-  return ctx.reply(
-    `## Here is your widget link!\n${link}\n\nAdd it as a Browser Source in OBS. Place the following code into the Custom CSS section\n\`\`\`css\n:root { background-color: rgba(0, 0, 0, 0); white-space: nowrap; }\n\`\`\`You can also make the widget fit your UI with\n\`\`\`css\n.widget { width: 100%%; }\`\`\``,
-  );
+  return ctx.reply({
+    content:
+      `## Here is your widget link!\n${link}\n\nAdd it as a Browser Source in OBS. Place the following code into the Custom CSS section\n\`\`\`css\n:root { background-color: rgba(0, 0, 0, 0); white-space: nowrap; }\n\`\`\`You can also make the widget fit your UI with\n\`\`\`css\n.widget { width: 100%%; }\`\`\``,
+    ephemeral: true,
+  });
 };

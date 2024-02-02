@@ -14,7 +14,6 @@ DEV_MODE = 'false'
 LOG_LEVEL = 'info'
 PORT = '9090'
 
-
 [[vm]]
 cpu_kind = 'shared'
 cpus = 2

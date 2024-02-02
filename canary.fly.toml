@@ -1,0 +1,20 @@
+# fly.toml app configuration file generated for aftermath-bot-canary on 2024-02-02T10:56:08-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'aftermath-bot-canary'
+primary_region = 'lhr'
+
+[env]
+CORE_SERVICE_URL = 'http://aftermath-core-canary.internal:9090/v1'
+PRIMARY_GUILD_ID = '1195871408392257668'
+FRONTEND_URL = 'https://canary.amth.one'
+LOG_LEVEL = 'info'
+DEV_MODE = 'false'
+PORT = '9090'
+
+[[vm]]
+cpu_kind = 'shared'
+cpus = 1
+memory_mb = 256

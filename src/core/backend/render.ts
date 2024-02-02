@@ -11,12 +11,6 @@ export function renderAccountStatsImage(
     const res = await fetch(
       `${backendUrl}/render/session/account/${accountId}`,
     );
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: `Failed to render account stats image: ${await res.text()}`,
-      };
-    }
     const data = await res.json() as Response<string>;
     if (!data.success) {
       return { ok: false, error: data.error.message || "Unknown error" };
@@ -32,12 +26,6 @@ export function renderUserStatsImage(
 ) {
   return tryCatch<Buffer>(async () => {
     const res = await fetch(`${backendUrl}/render/session/user/${userId}`);
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: `Failed to render user stats image: ${await res.text()}`,
-      };
-    }
     const data = await res.json() as Response<string>;
     if (!data.success) {
       return { ok: false, error: data.error.message || "Unknown error" };
@@ -51,14 +39,6 @@ export function renderUserStatsImage(
 export function getAvailableBackgroundPresets(userId: string) {
   return tryCatch<{ image: Buffer; options: string[] }>(async () => {
     const res = await fetch(`${backendUrl}/users/${userId}/content/select`);
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: `Failed to get current background selection preview: ${await res
-          .text()}`,
-      };
-    }
-
     const data = await res.json() as Response<
       { image: string; options: string[] }
     >;

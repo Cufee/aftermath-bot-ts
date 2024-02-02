@@ -19,12 +19,6 @@ export function getPermissions() {
 
     lastCacheUpdate = Date.now();
     const res = await fetch(`${backendUrl}/moderation/permissions`);
-    if (!res.ok) {
-      return {
-        ok: false,
-        error: `Failed to get permissions: ${await res.text()}`,
-      };
-    }
     const data = await res.json() as Response<Record<string, bigint>>;
     if (!data.success) {
       return { ok: false, error: data.error.message || "Unknown error" };

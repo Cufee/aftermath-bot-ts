@@ -49,9 +49,10 @@ export const handler: Handler<Context> = async (ctx: Context) => {
   await ctx.ack();
   const res = await uploadCustomUserBackground(ctx.user.id, (link || file)!);
   if (!res.ok) {
-    if (res.error === "invalid image format") {
+    console.error(res.error);
+    if (res.error == "invalid image format") {
       return ctx.reply({
-        content: "The link you provided doesn't point to a PNG or JPEG image.",
+        content: "The link you provided is not a valid PNG or JPEG image.",
         ephemeral: true,
       });
     }

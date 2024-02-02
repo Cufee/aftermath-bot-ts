@@ -15,13 +15,6 @@ export function searchAccounts(
     const response = await fetch(
       `${backendUrl}/accounts/search?realm=${realm}&search=${name}`,
     );
-    if (!response.ok) {
-      return {
-        ok: false,
-        error: `Failed to search accounts: ${await response.text()}`,
-      };
-    }
-
     const data = await response.json() as Response<Account>;
     if (!data.success) {
       return { ok: false, error: data.error.message || "Unknown error" };

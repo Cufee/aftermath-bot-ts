@@ -52,6 +52,10 @@ export class User {
     connection: null;
     exists: false;
   } {
+    if (!this._data.connections) {
+      return { connection: null, exists: false };
+    }
+
     const connection = this._data.connections.find((v) =>
       v.connectionType === "wargaming"
     );

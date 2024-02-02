@@ -52,7 +52,7 @@ export class User {
     connection: null;
     exists: false;
   } {
-    if (!this._data.connections) {
+    if (!Array.isArray(this._data.connections)) {
       return { connection: null, exists: false };
     }
 

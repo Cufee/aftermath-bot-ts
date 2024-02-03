@@ -28,10 +28,10 @@ export class User {
 
   get permissions() {
     let perms = this._data.permissions;
-    for (const v of this._data.connections) {
+    for (const v of this._data?.connections || []) {
       perms |= v.permissions;
     }
-    for (const v of this._data.subscriptions) {
+    for (const v of this._data?.subscriptions || []) {
       perms |= v.permissions;
     }
     return perms;
@@ -52,11 +52,7 @@ export class User {
     connection: null;
     exists: false;
   } {
-    if (!Array.isArray(this._data.connections)) {
-      return { connection: null, exists: false };
-    }
-
-    const connection = this._data.connections.find((v) =>
+    const connection = (this._data?.connections || []).find((v) =>
       v.connectionType === "wargaming"
     );
     if (!connection) {

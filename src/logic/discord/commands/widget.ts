@@ -38,7 +38,7 @@ export const handler: Handler<Context> = (ctx: Context) => {
 
   return ctx.reply({
     content:
-      `## Here is your widget link!\n${link}\n\nAdd it as a Browser Source in OBS. Place the following code into the Custom CSS section\n\`\`\`css\n:root { background-color: rgba(0, 0, 0, 0); white-space: nowrap; }\n\`\`\`You can also make the widget fit your UI with\n\`\`\`css\n.widget { width: 100%%; }\`\`\``,
+      `## Here is your widget link!\n${link}\n\nAdd it as a Browser Source in OBS. Place the following code into the Custom CSS section\n\`\`\`css\n:root { background-color: rgba(0, 0, 0, 0); white-space: nowrap; }\n\`\`\`You can also make the widget fit your UI with\n\`\`\`css\n.widget { width: 100%; }\`\`\``,
     ephemeral: true,
   });
 };

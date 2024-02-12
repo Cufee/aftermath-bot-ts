@@ -28,12 +28,14 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     });
   }
 
+  await ctx.ack();
+
   const { connection, exists } = ctx.user.wargaming;
   if (!exists || !connection.verified) {
     return ctx.reply({
       content:
         "You need to verify your Wargaming account to use this feature. Use `/verify` to get started!",
-      ephemeral: true,
+      ephemeral: false, // because it was acked before as false
     });
   }
 
@@ -42,7 +44,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
   if (!link && !file) {
     return ctx.reply({
       content: "You need to provide a valid link or attach an image.",
-      ephemeral: true,
+      ephemeral: false, // because it was acked before as false
     });
   }
 
@@ -53,7 +55,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     if (res.error == "invalid image format") {
       return ctx.reply({
         content: "The link you provided is not a valid PNG or JPEG image.",
-        ephemeral: true,
+        ephemeral: false, // because it was acked before as false
       });
     }
     return ctx.error(res.error);

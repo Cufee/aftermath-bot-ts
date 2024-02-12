@@ -33,13 +33,15 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     });
   }
 
+  await ctx.ack();
+
   const server = ctx.optionValue<string>("server");
   const nickname = ctx.optionValue<string>("nickname");
   if (nickname && !playerNameValid(nickname)) {
     return ctx.reply({
       content:
         "The nickname you provided is invalid. It should contain only letters, numbers, or underscores.",
-      ephemeral: true,
+      ephemeral: false, // because it was acked before as false
     });
   }
 
@@ -47,11 +49,9 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     return ctx.reply({
       content:
         "I need both the name and server to find your account. You can also use `/link` to setup a default account.",
-      ephemeral: true,
+      ephemeral: false, // because it was acked before as false
     });
   }
-
-  await ctx.ack();
 
   // Find account
   const account = await searchAccounts(nickname, server);
@@ -60,7 +60,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
       return ctx.reply({
         content:
           `Couldn't find a player named **${nickname}** on **${server}**. Was the name spelled correctly?`,
-        ephemeral: true,
+        ephemeral: false, // because it was acked before as false
       });
     }
     return ctx.error(account.error);

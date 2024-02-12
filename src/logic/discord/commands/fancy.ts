@@ -23,16 +23,16 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     });
   }
 
+  await ctx.ack();
+
   const { connection, exists } = ctx.user.wargaming;
   if (!exists || !connection.verified) {
     return ctx.reply({
       content:
         "You need to verify your Wargaming account to use this feature. Use `/verify` to get started!",
-      ephemeral: true,
+      ephemeral: false, // because it was acked before as false
     });
   }
-
-  await ctx.ack();
 
   const result = await getAvailableBackgroundPresets(ctx.user.id);
   if (!result.ok) {

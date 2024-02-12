@@ -17,7 +17,9 @@ command.addStringOption((option) =>
     .setRequired(false)
 );
 
-export const handler: Handler<Context> = (ctx: Context) => {
+export const handler: Handler<Context> = async (ctx: Context) => {
+  await ctx.ack(true);
+
   const flavor = ctx.optionValue<string>("flavor");
 
   const { connection, exists } = ctx.user.wargaming;

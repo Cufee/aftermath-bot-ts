@@ -22,6 +22,8 @@ command.addStringOption((option) =>
 );
 
 export const handler: Handler<Context> = async (ctx: Context) => {
+  await ctx.ack(true);
+
   const { connection } = ctx.user.wargaming;
   const server = ctx.optionValue<string>("server") || connection?.realm || null;
   if (!server) {

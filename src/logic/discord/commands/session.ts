@@ -33,6 +33,8 @@ command.addUserOption((option) =>
 );
 
 export const handler: Handler<Context> = async (ctx: Context) => {
+  await ctx.ack();
+
   const mentionedUser = ctx.optionValue<string>("user");
   const server = ctx.optionValue<string>("server");
   const nickname = ctx.optionValue<string>("nickname");
@@ -40,7 +42,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
     return ctx.reply({
       content:
         "The nickname you provided is invalid. It should contain only letters, numbers, or underscores.",
-      ephemeral: true,
+      ephemeral: false, // because it was acked before as false
     });
   }
 
@@ -59,7 +61,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
         return ctx.reply({
           content:
             "The user you mentioned doesn't have a Wargaming account linked.",
-          ephemeral: true,
+          ephemeral: false, // because it was acked before as false
         });
       }
       accountId = connection.accountId;
@@ -78,7 +80,7 @@ export const handler: Handler<Context> = async (ctx: Context) => {
           return ctx.reply({
             content:
               `Couldn't find a player named **${nickname}** on **${server}**. Was the name spelled correctly?`,
-            ephemeral: true,
+            ephemeral: false, // because it was acked before as false
           });
         }
         return ctx.error(account.error);
@@ -90,11 +92,10 @@ export const handler: Handler<Context> = async (ctx: Context) => {
       return ctx.reply({
         content:
           "I need both the name and server to find your account. You can also use `/link` to setup a default account.",
-        ephemeral: true,
+        ephemeral: false, // because it was acked before as false
       });
     }
   }
-  await ctx.ack();
 
   const result = await renderAccountStatsImage(accountId);
   if (!result.ok) {

@@ -14,7 +14,8 @@ export const command = new CommandBuilder();
 command.setName("help");
 command.setDescription("Get some helpful information about the bot");
 
-export const handler: Handler<Context> = (ctx: Context) => {
+export const handler: Handler<Context> = async (ctx: Context) => {
+  await ctx.ack(true);
   return ctx.reply({ content: helpMessage(), ephemeral: true });
 };
 

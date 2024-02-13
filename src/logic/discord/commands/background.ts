@@ -17,7 +17,7 @@ command.addAttachmentOption((option) =>
     .setDescription("PNG or JPEG image")
     .setRequired(false)
 );
-command.setAdvertise(false);
+command.setAdvertise(true);
 
 export const handler: Handler<Context> = async (ctx: Context) => {
   if (!ctx.user.hasPermission("actions/uploadPersonalBackground")) {

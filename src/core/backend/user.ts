@@ -27,12 +27,12 @@ export class User {
   }
 
   get permissions() {
-    let perms = this._data.permissions;
+    let perms = +this._data.permissions.split("/").slice(-1);
     for (const v of this._data?.connections || []) {
-      perms |= v.permissions;
+      perms |= +v.permissions.split("/").slice(-1);
     }
     for (const v of this._data?.subscriptions || []) {
-      perms |= v.permissions;
+      perms |= +v.permissions.split("/").slice(-1);
     }
     return perms;
   }
@@ -79,7 +79,7 @@ interface UserConnection {
   id: string;
 
   userID: string;
-  permissions: bigint;
+  permissions: string;
 
   connectionID: string;
   connectionType: string;
@@ -89,7 +89,7 @@ interface UserConnection {
 interface UserSubscription {
   userID: string;
   referenceID: string;
-  permissions: bigint;
+  permissions: string;
 
   subscriptionType: string;
   creationDate: Date;
@@ -100,7 +100,7 @@ export interface UserData {
   id: string;
   is_banned: boolean;
 
-  permissions: bigint;
+  permissions: string;
   featureFlags: string[];
 
   connections: UserConnection[];

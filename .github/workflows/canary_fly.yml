@@ -1,9 +1,9 @@
 name: Fly Deploy
 
 on:
-  push:
-    branches:
-      - canary
+  # push:
+  #   branches:
+  #     - canary
   workflow_dispatch: {}
 
 jobs:
